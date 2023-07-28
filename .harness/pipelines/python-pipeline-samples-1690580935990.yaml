@@ -3,35 +3,99 @@ pipeline:
   name: Build python-pipeline-samples
   orgIdentifier: default
   projectIdentifier: CIPythonQuickstart
-  properties:
-    ci:
-      codebase:
-        build: <+input>
-        connectorRef: account.Github_OAuth_1690579424062
-        repoName: norbertuk/python-pipeline-samples
   stages:
     - stage:
-        identifier: build
-        name: build
+        name: build test and run
+        identifier: build_test_and_run
+        description: ""
+        type: CI
         spec:
           cloneCodebase: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Docker
+            spec: {}
           execution:
             steps:
               - step:
-                  identifier: dockerbuild
-                  name: docker_build
+                  type: Run
+                  name: Code compile
+                  identifier: Code_compile
                   spec:
-                    image: plugins/docker
-                    settings:
-                      dry_run: "true"
-                      repo: hello/world
-                      tags: latest
-                  timeout: ""
-                  type: Plugin
-          platform:
-            arch: Amd64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
+                    connectorRef: account.harnessImage
+                    image: python:3.10.6-alpine
+                    shell: Sh
+                    command: python -m compileall ./
+              - step:
+                  type: Run
+                  name: create Docker file
+                  identifier: create_Docker_file
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: alpine
+                    shell: Sh
+                    command: |-
+                      touch pythondockerfile
+                      cat > pythondockerfile <<- EOM
+                      FROM python:3.10.6-alpine
+                      WORKDIR /python-pipeline-samples
+                      ADD . /python-pipeline-samples
+                      RUN pip install -r requirements.txt
+                      CMD ["python" , "app.py"]
+                      EOM
+                      cat pythondockerfile
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and push image to docker hub
+                  identifier: Build_and_push_image_to_docker_hub
+                  spec:
+                    connectorRef: account.harnessImage
+                    repo: norbertsoltesz/private
+                    tags:
+                      - latest
+                    dockerfile: pythondockerfile
+    - stage:
+        name: Integration Test
+        identifier: Integration_Test
         type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: false
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Docker
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Background
+                  name: python server
+                  identifier: python_server
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: python-pipeline-samples
+                    shell: Sh
+                    command: python3 /python-pipeline-samples/app.py
+                  description: server connection
+              - step:
+                  type: Run
+                  name: test connection to server
+                  identifier: test_connection_to_server
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: curlimages/curl:7.73.0
+                    shell: Sh
+                    command: |-
+                      sleep 10
+                      curl localhost:5000
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.Github_OAuth_1690579424062
+        repoName: https://github.com/norbertuk/python-pipeline-samples
+        build: <+input>
