@@ -14,7 +14,7 @@ pipeline:
             os: Linux
             arch: Amd64
           runtime:
-            type: Docker
+            type: Cloud
             spec: {}
           execution:
             steps:
@@ -23,7 +23,7 @@ pipeline:
                   name: Code compile
                   identifier: Code_compile
                   spec:
-                    connectorRef: account.harnessImage
+                    connectorRef: NorbertDockerHub
                     image: python:3.10.6-alpine
                     shell: Sh
                     command: python -m compileall ./
