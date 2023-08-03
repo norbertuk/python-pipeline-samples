@@ -7,7 +7,6 @@ pipeline:
     - stage:
         name: build test and run
         identifier: build_test_and_run
-        description: ""
         type: CI
         spec:
           cloneCodebase: true
@@ -15,7 +14,7 @@ pipeline:
             os: Linux
             arch: Amd64
           runtime:
-            type: Docker
+            type: Cloud
             spec: {}
           execution:
             steps:
@@ -56,6 +55,8 @@ pipeline:
                     tags:
                       - latest
                     dockerfile: pythondockerfile
+          caching:
+            enabled: false
         delegateSelectors:
           - kubernetes-delegate
     - stage:
