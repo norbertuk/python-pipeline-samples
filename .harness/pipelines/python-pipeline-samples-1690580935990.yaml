@@ -58,7 +58,7 @@ pipeline:
           caching:
             enabled: false
         delegateSelectors:
-          - docker-delegate
+          - linux-amd64
     - stage:
         name: Integration Test
         identifier: Integration_Test
@@ -97,7 +97,7 @@ pipeline:
                       sleep 10
                       curl localhost:5000
         delegateSelectors:
-          - docker-delegate
+          - linux-amd64
   properties:
     ci:
       codebase:
