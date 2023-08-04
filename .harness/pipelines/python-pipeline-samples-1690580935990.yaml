@@ -96,6 +96,8 @@ pipeline:
                     command: |-
                       sleep 10
                       curl localhost:5000
+        delegateSelectors:
+          - docker-delegate
   properties:
     ci:
       codebase:
