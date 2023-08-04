@@ -58,7 +58,7 @@ pipeline:
           caching:
             enabled: false
         delegateSelectors:
-          - linux-amd64
+          - kubernetes-delegate
     - stage:
         name: Integration Test
         identifier: Integration_Test
@@ -97,7 +97,7 @@ pipeline:
                       sleep 10
                       curl localhost:5000
         delegateSelectors:
-          - linux-amd64
+          - kubernetes-delegate
   properties:
     ci:
       codebase:
