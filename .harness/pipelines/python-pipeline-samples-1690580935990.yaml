@@ -58,7 +58,7 @@ pipeline:
           caching:
             enabled: false
         delegateSelectors:
-          - kubernetes-delegate
+          - docker-delegate
     - stage:
         name: Integration Test
         identifier: Integration_Test
